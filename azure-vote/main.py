@@ -25,13 +25,14 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 # For metrics
 stats = stats_module.stats
 view_manager = stats.view_manager
+connKey=''
 # Logging
 config_integration.trace_integrations(['logging'])
 config_integration.trace_integrations(['requests'])
 # Standard Logging
 logger = logging.getLogger(__name__)
-handler = AzureLogHandler(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/')
-handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
+handler = AzureLogHandler(connection_string=connKey)
+# handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
 logger.addHandler(handler)
 # Logging custom Events 
 logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'))
@@ -43,7 +44,7 @@ exporter = metrics_exporter.new_metrics_exporter(
     enable_standard_metrics=True,
     connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'
     )
-# view_manager.register_exporter(exporter)
+view_manager.register_exporter(exporter)
 
 # Tracing- send all events to the Log Analytics workspace
 tracer = Tracer(
