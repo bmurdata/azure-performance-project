@@ -35,21 +35,21 @@ handler = AzureLogHandler(connection_string=connKey)
 # handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
 logger.addHandler(handler)
 # Logging custom Events 
-logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'))
+logger.addHandler(AzureEventHandler(connection_string=connKey))
 # Set the logging level
 logger.setLevel(logging.INFO)
 
 # Metrics
 exporter = metrics_exporter.new_metrics_exporter(
     enable_standard_metrics=True,
-    connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'
+    connection_string=connKey
     )
 view_manager.register_exporter(exporter)
 
 # Tracing- send all events to the Log Analytics workspace
 tracer = Tracer(
     exporter=AzureExporter(
-        connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'
+        connection_string=connKey
         ),
         sampler=ProbabilitySampler(1.0),
     )
@@ -59,7 +59,7 @@ app = Flask(__name__)
 # Requests
 middleware = FlaskMiddleware(
     app,
-    exporter=AzureExporter(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'),
+    exporter=AzureExporter(connection_string=connKey),
     sampler=ProbabilitySampler(rate=1.0),
 )
 
@@ -143,6 +143,6 @@ def index():
 
 if __name__ == "__main__":
     # comment line below when deploying to VMSS
-    app.run() # local
+    # app.run() # local
     # uncomment the line below before deployment to VMSS
-    # app.run(host='0.0.0.0', threaded=True, debug=True) # remote
+    app.run(host='0.0.0.0', threaded=True, debug=True) # remote
