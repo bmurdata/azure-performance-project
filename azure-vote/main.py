@@ -25,7 +25,7 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 # For metrics
 stats = stats_module.stats
 view_manager = stats.view_manager
-connKey=''
+connKey="InstrumentationKey=83469688-2bff-474d-9f1d-f504cc6fd349;IngestionEndpoint=https://westus-0.in.applicationinsights.azure.com/"
 # Logging
 config_integration.trace_integrations(['logging'])
 config_integration.trace_integrations(['requests'])
@@ -35,21 +35,21 @@ handler = AzureLogHandler(connection_string=connKey)
 # handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
 logger.addHandler(handler)
 # Logging custom Events 
-logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'))
+logger.addHandler(AzureEventHandler(connection_string=connKey))
 # Set the logging level
 logger.setLevel(logging.INFO)
 
 # Metrics
 exporter = metrics_exporter.new_metrics_exporter(
     enable_standard_metrics=True,
-    connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'
+    connection_string=connKey
     )
 view_manager.register_exporter(exporter)
 
 # Tracing- send all events to the Log Analytics workspace
 tracer = Tracer(
     exporter=AzureExporter(
-        connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'
+        connection_string=connKey
         ),
         sampler=ProbabilitySampler(1.0),
     )
@@ -59,7 +59,7 @@ app = Flask(__name__)
 # Requests
 middleware = FlaskMiddleware(
     app,
-    exporter=AzureExporter(connection_string='InstrumentationKey=4605c08f-2363-4664-88ec-f167cf7bf8a0;IngestionEndpoint=https://westus2-2.in.applicationinsights.azure.com/'),
+    exporter=AzureExporter(connection_string=connKey),
     sampler=ProbabilitySampler(rate=1.0),
 )
 
@@ -101,9 +101,11 @@ def index():
         vote1 = r.get(button1).decode('utf-8')
         # TODO: use tracer object to trace cat vote
         tracer.span(name='Cat Vote Made')
+        logger.info('Cat Vote Meow')
         vote2 = r.get(button2).decode('utf-8')
         # TODO: use tracer object to trace dog vote
         tracer.span(name='Dog Vote Made')
+        logger.info('Dog Vote Woof')
 
         # Return index with values
         return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
